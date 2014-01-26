@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">ICCOMA</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="standby">Standby</string>
+    <string name="order">Order</string>
+    <string name="address_">Address:</string>
+    <string name="password_">Password:</string>
+    <string name="cups_number">Cups number</string>
+    <string name="offline">Offline</string>
+
+</resources>
