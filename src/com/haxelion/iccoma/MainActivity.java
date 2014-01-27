@@ -120,7 +120,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener, O
 			if(status != client.getStatus()) {
 				status = client.getStatus();
 				statusHandler.obtainMessage(1).sendToTarget();
-				if(status == 2) {
+				if(status == 3) {
 					NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
 					builder.setSmallIcon(R.drawable.ic_launcher);
 					builder.setContentTitle("Coffee is ready!");
