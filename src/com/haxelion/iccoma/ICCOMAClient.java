@@ -146,7 +146,7 @@ public class ICCOMAClient extends Thread {
 				
 			}
 			try {
-				for(int i = 0; i<10 && cups == 0; i++)
+				for(int i = 0; i<100 && cups == 0; i++)
 					sleep(100);
 			}
 			catch(Exception e) {
