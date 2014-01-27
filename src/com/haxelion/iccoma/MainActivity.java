@@ -52,6 +52,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener, O
 		reset_button.setOnClickListener(this);
 		open_button.setOnClickListener(this);
 		close_button.setOnClickListener(this);
+		setRequestEnabled(false);
 		statusDaemonTimer = new Timer();
 		statusDaemonTimer.schedule(statusDaemon, 0, 1000);
 		client.start();
@@ -119,6 +120,13 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener, O
 	private void showAlert(String msg) {
 		new AlertDialog.Builder(this).setMessage(msg).setNeutralButton("OK", null).show();
 	}
+	
+	private void setRequestEnabled(boolean enabled) {
+		order_button.setEnabled(enabled);
+		open_button.setEnabled(enabled);
+		close_button.setEnabled(enabled);
+		reset_button.setEnabled(enabled);
+	}
 
 	private TimerTask statusDaemon = new TimerTask() {
 		
@@ -147,31 +155,34 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener, O
 	    	if(status == -1) {
 				status_text.setText("Offline");
 				status_text.setTextColor(getResources().getColor(R.color.red));
+				setRequestEnabled(false);
 			}
 	    	else if(status == 0) {
 				status_text.setText("Standby");
 				status_text.setTextColor(getResources().getColor(R.color.blue));
+				setRequestEnabled(true);
 			}
 	    	else if(status == 1) {
 				status_text.setText("Brewing");
 				status_text.setTextColor(getResources().getColor(R.color.orange));
+				setRequestEnabled(false);
 			}
 	    	else if(status == 2) {
 				status_text.setText("Executing");
 				status_text.setTextColor(getResources().getColor(R.color.orange));
+				setRequestEnabled(false);
 			}
 	    	else if(status == 3) {
 				status_text.setText("Ready");
 				status_text.setTextColor(getResources().getColor(R.color.green));
+				setRequestEnabled(false);
 			}
 	    }
 	};
 	
 	private Handler alertHandler = new Handler() {
 		public void handleMessage(Message msg) {
-			if(client.getOrderStatus() == 1)
-				showAlert("Request succesful.");
-			else if(client.getOrderStatus() == -1)
+			if(client.getOrderStatus() == -1)
 				showAlert("Request failed.");
 			client.acknowledgeOrderStatus();
 		}
