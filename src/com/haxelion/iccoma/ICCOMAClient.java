@@ -17,6 +17,7 @@ public class ICCOMAClient extends Thread {
 	public static int CMD_RESET = 3;
 	
 	public ICCOMAClient(String address, String password) {
+		super();
 		this.address = address;
 		this.password = password;
 		status = -1; // offline

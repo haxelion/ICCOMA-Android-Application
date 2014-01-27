@@ -52,9 +52,16 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener, O
 		reset_button.setOnClickListener(this);
 		open_button.setOnClickListener(this);
 		close_button.setOnClickListener(this);
-		statusDaemonTimer = new Timer(true);
-		statusDaemonTimer.schedule(statusDaemon, 0,500);
+		statusDaemonTimer = new Timer();
+		statusDaemonTimer.schedule(statusDaemon, 0, 1000);
 		client.start();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		client.stop();
+		statusDaemonTimer.cancel();
 	}
 
 	@Override
