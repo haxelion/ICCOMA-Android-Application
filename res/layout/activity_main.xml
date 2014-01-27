@@ -65,32 +65,16 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView2"
+    <Button
+        android:id="@+id/configure_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/address_" />
+        android:text="@string/configure" />
 
-    <EditText
-        android:id="@+id/address_field"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:imeOptions="actionDone"
-        android:inputType="text" />
-
-    <TextView
-        android:id="@+id/textView3"
+    <Button
+        android:id="@+id/reset_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/password_" />
-
-    <EditText
-        android:id="@+id/password_field"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:imeOptions="actionDone"
-        android:inputType="textPassword" />
+        android:text="@string/reset_iccoma" />
 
 </LinearLayout>

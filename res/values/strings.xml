@@ -10,5 +10,10 @@
     <string name="password_">Password:</string>
     <string name="cups_number">Cups number</string>
     <string name="offline">Offline</string>
+    <string name="configure">Configure</string>
+    <string name="reset_iccoma">Reset ICCOMA</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="description">ICCOMA Remote Control Application</string>
 
 </resources>
