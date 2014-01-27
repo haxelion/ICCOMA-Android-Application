@@ -11,14 +11,18 @@ public class ICCOMAClient extends Thread {
 	private int status;
 	private String address, password;
 	private static char[] MAP = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-	private int order;
-	private int order_passed = 0;
+	private int cups, cmd, order_passed;
+	public static int CMD_OPEN_TRAY = 1;
+	public static int CMD_CLOSE_TRAY = 2;
+	public static int CMD_RESET = 3;
 	
 	public ICCOMAClient(String address, String password) {
 		this.address = address;
 		this.password = password;
 		status = -1; // offline
-		order = -1;
+		cups = 0;
+		cmd = 0;
+		order_passed = 0;
 	}
 	
 	public int getStatus() {
@@ -42,42 +46,13 @@ public class ICCOMAClient extends Thread {
 	}
 	
 	public void orderCoffee(int cups) {
-		order = cups;
+		this.cups = cups;
 		order_passed = 0;
 	}
 	
-	public void orderReset() {
-		order = -2;
+	public void sendCommand(int cmd) {
+		this.cmd = cmd;
 		order_passed = 0;
-	}
-	
-	private void resetICCOMA() {
-		try {
-			URL url = new URL("http://" + address + "/reset");
-			HttpURLConnection request = (HttpURLConnection) url.openConnection();
-			if(request.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				byte response[] = new byte[128];
-				request.getInputStream().read(response);
-				String s = new String(response);
-				request.disconnect();
-	            if(s.contains("ok"))
-	            	order_passed = 1;
-	            else {
-	            	Log.e("ICCOMAClient", "Unrecognized status: " + s);
-	            	order_passed = -1;
-	            }
-	            order = -1;
-			}
-			else
-			{
-				status = -1;
-				Log.e("ICCOMAClient", "Http error: " + Integer.toString(request.getResponseCode()));
-			}
-		}
-		catch (Exception e) {
-			Log.e("ICCOMAClient", "Error: " + e.getMessage());
-			status = -1;
-		}
 	}
 	
 	private void updateStatus() {
@@ -93,9 +68,9 @@ public class ICCOMAClient extends Thread {
 	            	status = 0;
 	            else if (s.contains("brewing"))
 	            	status = 1;
-	            else if(s.contains("ready"))
+	            else if(s.contains("executing"))
 	            	status = 2;
-	            else if (s.contains("error"))
+	            else if (s.contains("ready"))
 	            	status = 3;
 	            else 
 	            	Log.e("ICCOMAClient", "Unrecognized status: " + s);
@@ -112,11 +87,11 @@ public class ICCOMAClient extends Thread {
 		}
 	}
 	
-	private void orderBrewing() {
+	private void authenticatedRequest(String ressource, String param) {
 		try {
 			byte response[] = new byte[128];
 			MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-			URL url = new URL("http://" + address + "/brew?cups=" + Integer.toString(order));
+			URL url = new URL("http://" + address + ressource + "?" + param);
 			HttpURLConnection request = (HttpURLConnection) url.openConnection();
 			if(request.getResponseCode() != HttpURLConnection.HTTP_OK) {
 				Log.e("ICCOMAClient", "Http error: " + Integer.toString(request.getResponseCode()));
@@ -127,8 +102,7 @@ public class ICCOMAClient extends Thread {
 			request.disconnect();
             sha256.update(password.getBytes("US-ASCII"));
             sha256.update(nonce.getBytes("US-ASCII"));
-            sha256.update("cups=".getBytes("US-ASCII"));
-            byte[] hash = sha256.digest(Integer.toString(order).getBytes("US-ASCII"));
+            byte[] hash = sha256.digest(param.getBytes("US-ASCII"));
             char hmac[] = new char[64];
             for(int i = 0; i<hash.length; i++) {
             	hmac[2*i] = MAP[(hash[i]>>4)&0xF];
@@ -149,8 +123,6 @@ public class ICCOMAClient extends Thread {
             	Log.e("ICCOMAClient", "Order didn't pass");
             	order_passed = -1;
             }
-            	
-            order = -1;
 		}
 		catch (Exception e) {
 			Log.e("ICCOMAClient", e.getMessage());
@@ -163,14 +135,18 @@ public class ICCOMAClient extends Thread {
 		while(true) {
 			if(address != "") {
 				updateStatus();
-				if(order == -2)
-					resetICCOMA();
-				else if(order != -1)
-					orderBrewing();
+				if(cmd != 0) {
+					authenticatedRequest("/command", "cmd="+Integer.toString(cmd));
+					cmd = 0;
+				}
+				if(cups != 0) {
+					authenticatedRequest("/brew", "cups="+Integer.toString(cups));
+					cups = 0;
+				}
 				
 			}
 			try {
-				for(int i = 0; i<10 && order == -1; i++)
+				for(int i = 0; i<10 && cups == 0; i++)
 					sleep(100);
 			}
 			catch(Exception e) {

@@ -3,7 +3,6 @@ package com.haxelion.iccoma;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -16,26 +15,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.TextView.OnEditorActionListener;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements OnSeekBarChangeListener, OnClickListener {
 	
-	private Context context;
 	private SeekBar cups_slider;
 	private TextView cups_text, status_text;
-	private Button order_button, configure_button, reset_button;
+	private Button order_button, configure_button, reset_button, open_button, close_button;
 	private ICCOMAClient client;
 	private Timer statusDaemonTimer;
 	private int status = -1;
@@ -43,7 +35,6 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener, O
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		context = this.getApplicationContext();
 		setContentView(R.layout.activity_main);
 		SharedPreferences settings = getSharedPreferences("settings", 0);
 		client = new ICCOMAClient(settings.getString("address", ""), settings.getString("password", ""));
@@ -51,12 +42,16 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener, O
 		cups_text = (TextView)findViewById(R.id.cups_text);
 		status_text = (TextView)findViewById(R.id.status_text);
 		order_button = (Button)findViewById(R.id.order_button);
-		configure_button = (Button)findViewById(R.id.configure_button);
 		reset_button = (Button)findViewById(R.id.reset_button);
+		open_button = (Button)findViewById(R.id.open_button);
+		close_button = (Button)findViewById(R.id.close_button);
+		configure_button = (Button)findViewById(R.id.configure_button);
 		cups_slider.setOnSeekBarChangeListener(this);
 		order_button.setOnClickListener(this);
 		configure_button.setOnClickListener(this);
 		reset_button.setOnClickListener(this);
+		open_button.setOnClickListener(this);
+		close_button.setOnClickListener(this);
 		statusDaemonTimer = new Timer(true);
 		statusDaemonTimer.schedule(statusDaemon, 0,500);
 		client.start();
@@ -95,8 +90,14 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener, O
 			Intent intent = new Intent(this, SettingsActivity.class);
 			startActivityForResult(intent, 0);
 		}
+		else if(v.getId() == open_button.getId()) {
+			client.sendCommand(ICCOMAClient.CMD_OPEN_TRAY);
+		}
+		else if(v.getId() == close_button.getId()) {
+			client.sendCommand(ICCOMAClient.CMD_CLOSE_TRAY);
+		}
 		else if(v.getId() == reset_button.getId()) {
-			client.orderReset();
+			client.sendCommand(ICCOMAClient.CMD_RESET);
 		}
 	}
 	
@@ -149,12 +150,12 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener, O
 				status_text.setTextColor(getResources().getColor(R.color.orange));
 			}
 	    	else if(status == 2) {
-				status_text.setText("Ready");
-				status_text.setTextColor(getResources().getColor(R.color.green));
+				status_text.setText("Executing");
+				status_text.setTextColor(getResources().getColor(R.color.orange));
 			}
 	    	else if(status == 3) {
-				status_text.setText("Error");
-				status_text.setTextColor(getResources().getColor(R.color.red));
+				status_text.setText("Ready");
+				status_text.setTextColor(getResources().getColor(R.color.green));
 			}
 	    }
 	};
